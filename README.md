@@ -4,10 +4,6 @@
 ![](https://hackmd.io/_uploads/r1jLVpUJT.png)
 ![image](https://hackmd.io/_uploads/Sy2bz9bBa.png)
 ![image](https://hackmd.io/_uploads/HJX9jcZH6.png)
-### GRC（治理、風險管理與合規）
-- 合規風險
-- 技術風險
-- 名譽風險
 
 ### Methodology(方法論)
 - **Recon（偵察）**
